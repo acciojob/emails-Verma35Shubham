@@ -1,5 +1,7 @@
 package com.driver;
 
+import org.apache.commons.lang3.tuple.Triple;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -21,8 +23,10 @@ public class Gmail extends Email {
     int inboxCapacity; //maximum number of mails inbox can store
     //Inbox: Stores mails. Each mail has date (Date), sender (String), message (String). It is guaranteed that message is distinct for all mails.
     //Trash: Stores mails. Each mail has date (Date), sender (String), message (String)
-    ArrayList<Pair> inbox;
-    ArrayList<Pair> trash;
+//    ArrayList<Pair> inbox;
+//    ArrayList<Pair> trash;
+    ArrayList<Triple<Date, String, String>> inbox;
+    ArrayList<Triple<Date,String, String>> trash;
     public Gmail(String emailId, int inboxCapacity) {
         super(emailId);
         this.inboxCapacity = inboxCapacity;
@@ -39,23 +43,35 @@ public class Gmail extends Email {
             trash.add(inbox.get(0));
             inbox.remove(0);
         }
-        Pair current = new Pair(date, sender, message);
-        inbox.add(current);
+//        Pair current = new Pair(date, sender, message);
+        Triple<Date, String, String> mail = Triple.of(date, sender, message);
+        inbox.add(mail);
     }
 
     public void deleteMail(String message){
         // Each message is distinct
         // If the given message is found in any mail in the inbox, move the mail to trash, else do nothing
-        Pair found = null;
-        for(Pair current : inbox){
-            if(current.message.equals(message)){
-                found = current;
+//        Pair found = null;
+//        for(Pair current : inbox){
+//            if(current.message.equals(message)){
+//                found = current;
+//                break;
+//            }
+//        }
+//        if(found != null){
+//            inbox.remove(found);
+//            trash.add(found);
+//        }
+        int index = -1;
+        for (int i = 0; i < inbox.size(); i++) {
+            if(message.equals(inbox.get(i).getRight())){
+                index = i;
                 break;
             }
         }
-        if(found != null){
-            inbox.remove(found);
-            trash.add(found);
+        if(index != -1){
+            trash.add(inbox.get(index));
+            inbox.remove(index);
         }
     }
 
@@ -64,7 +80,7 @@ public class Gmail extends Email {
         // Else, return the message of the latest mail present in the inbox
         if(inbox.isEmpty())
             return null;
-        return inbox.get(inbox.size()-1).message;
+        return inbox.get(inbox.size()-1).getRight();
     }
 
     public String findOldestMessage(){
@@ -72,16 +88,16 @@ public class Gmail extends Email {
         // Else, return the message of the oldest mail present in the inbox
         if(inbox.isEmpty())
             return null;
-        Pair old_mail = inbox.get(0);
-        return old_mail.message;
+
+        return inbox.get(0).getRight();
     }
 
     public int findMailsBetweenDates(Date start, Date end){
         //find number of mails in the inbox which are received between given dates
         //It is guaranteed that start date <= end date
         int count = 0;
-        for(Pair current : inbox){
-            if((current.date.compareTo(start) >= 0) && (current.date.compareTo(end)<=0))
+        for(Triple<Date, String, String> current : inbox){
+            if((current.getLeft().compareTo(start) >= 0) && (current.getLeft().compareTo(end)<=0))
                 count++;
         }
         return count;
